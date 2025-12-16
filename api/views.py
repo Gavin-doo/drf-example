@@ -18,3 +18,35 @@ class ProductList(APIView):
             serializer.save()
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status=400)
+    
+
+class ProductDetail(APIView):
+    def get_object(self, pk):
+        try:
+            return Product.objects.get(pk=pk)
+        except Product.DoesNotExist:
+            return None
+
+    def get(self, request, pk):
+        product = self.get_object(pk)
+        if product is None:
+            return Response(status=404)
+        serializer = ProductSerializer(product)
+        return Response(serializer.data)
+
+    def put(self, request, pk):
+        product = self.get_object(pk)
+        if product is None:
+            return Response(status=404)
+        serializer = ProductSerializer(product, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)
+
+    def delete(self, request, pk):
+        product = self.get_object(pk)
+        if product is None:
+            return Response(status=404)
+        product.delete()
+        return Response(status=204)
